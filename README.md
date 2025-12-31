@@ -93,9 +93,9 @@ npm run test:race
 ---
 
 ## 🐳 Docker
-
+```bash
 docker-compose up -d
-
+```
 ---
 
 ## 📊 Logging
