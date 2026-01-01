@@ -45,6 +45,7 @@ Clinic API adalah backend service untuk sistem appointment klinik yang dirancang
 ## Prerequisites
 
 Pastikan Anda sudah menginstall:
+
 - Node.js (versi 18 atau lebih tinggi)
 - npm atau yarn
 - PostgreSQL atau MySQL (sesuai pilihan)
@@ -161,11 +162,13 @@ npm start
 ### Migrasi Database
 
 Buat migration baru:
+
 ```bash
 npx prisma migrate dev --name <migration-name>
 ```
 
 Reset database:
+
 ```bash
 npx prisma migrate reset
 ```
@@ -173,6 +176,7 @@ npx prisma migrate reset
 ### Prisma Studio
 
 Buka GUI untuk melihat dan mengedit data:
+
 ```bash
 npx prisma studio
 ```
@@ -180,6 +184,7 @@ npx prisma studio
 ### Update Schema
 
 Setelah mengubah `schema.prisma`:
+
 ```bash
 npx prisma generate
 npx prisma migrate dev
@@ -271,6 +276,17 @@ docker-compose up -d
 - Idempotency via database (tanpa Redis)
 
 ---
+
+### Trade-offs
+
+- PostgreSQL exclusion constraint digunakan untuk mencegah double-booking secara deterministik.
+  Trade-off: membutuhkan raw SQL migration karena belum didukung Prisma schema.
+
+- Rate limiting menggunakan in-memory store (express-rate-limit).
+  Trade-off: tidak cocok untuk multi-instance deployment, namun cukup untuk scope assignment.
+
+- Idempotency key disimpan di database untuk konsistensi lintas restart.
+  Trade-off: menambah write load dan membutuhkan cleanup TTL.
 
 ## 📄 MIT License
 
