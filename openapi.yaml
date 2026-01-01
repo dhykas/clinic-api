@@ -1,100 +1,23 @@
 openapi: 3.0.3
 info:
-  title: Clinic API
-  description: Appointment scheduling API with idempotency and race safety
+  title: Clinic Appointment API
   version: 1.0.0
+  description: |
+    API for managing doctor–patient appointments with idempotent writes
+    and strong guarantees against double-booking.
 
 servers:
   - url: http://localhost:3000
 
-paths:
-  /health:
-    get:
-      summary: Health check
-      responses:
-        '200':
-          description: OK
-
-  /api/appointments:
-    get:
-      summary: Get appointments by doctor and date
-      parameters:
-        - in: query
-          name: doctor_id
-          required: true
-          schema:
-            type: string
-        - in: query
-          name: date
-          required: false
-          schema:
-            type: string
-            example: 2025-11-15
-      responses:
-        '200':
-          description: Appointment list
-
-    post:
-      summary: Create appointment
-      parameters:
-        - in: header
-          name: Idempotency-Key
-          required: false
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateAppointment'
-      responses:
-        '201':
-          description: Created
-        '409':
-          description: Time overlap
-
-  /api/appointments/{id}:
-    patch:
-      summary: Reschedule appointment
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-        - in: header
-          name: Idempotency-Key
-          required: false
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RescheduleAppointment'
-      responses:
-        '200':
-          description: Rescheduled
-        '409':
-          description: Time overlap
-
-    delete:
-      summary: Delete appointment
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Deleted
-
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
   schemas:
-    CreateAppointment:
+    AppointmentCreateRequest:
       type: object
       required:
         - patient_id
@@ -113,16 +36,129 @@ components:
           type: string
           format: date-time
 
-    RescheduleAppointment:
+    AppointmentResponse:
       type: object
-      required:
-        - start_time
-        - end_time
       properties:
-        start_time:
+        id:
           type: string
-          format: date-time
-        end_time:
+        status:
           type: string
-          format: date-time
+          example: CONFIRMED
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            correlation_id:
+              type: string
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /appointments:
+    post:
+      summary: Create appointment (idempotent)
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentCreateRequest'
+      responses:
+        '201':
+          description: Appointment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentResponse'
+        '409':
+          description: Time overlap conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: List appointments by doctor and date
+      parameters:
+        - in: query
+          name: doctor_id
+          schema:
+            type: string
+        - in: query
+          name: date
+          description: YYYY-MM-DD
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Appointment list
+
+  /appointments/{id}:
+    patch:
+      summary: Reschedule appointment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                start_time:
+                  type: string
+                  format: date-time
+                end_time:
+                  type: string
+                  format: date-time
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Appointment rescheduled
+        '409':
+          description: Time overlap conflict
+
+    delete:
+      summary: Cancel appointment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Appointment cancelled
+
+  /healthz:
+    get:
+      summary: Liveness probe
+      responses:
+        '200':
+          description: OK
+
+  /readyz:
+    get:
+      summary: Readiness probe
+      responses:
+        '200':
+          description: Ready

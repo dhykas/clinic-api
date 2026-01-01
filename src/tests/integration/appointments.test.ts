@@ -22,27 +22,27 @@ describe('POST /api/appointments', () => {
     expect(res.body.id).toBeDefined();
   });
 
-//   it('rejects overlap', async () => {
-//     await request(app)
-//       .post('/api/appointments')
-//       .set('Idempotency-Key', 'test-2')
-//       .send({
-//         patient_id: 'pat_001',
-//         doctor_id: 'doc_001',
-//         start_time: '2025-11-15T09:00:00+07:00',
-//         end_time: '2025-11-15T09:30:00+07:00',
-//       });
+  it('rejects overlap', async () => {
+    await request(app)
+      .post('/api/appointments')
+      .set('Idempotency-Key', 'test-2')
+      .send({
+        patient_id: 'pat_001',
+        doctor_id: 'doc_001',
+        start_time: '2025-11-15T09:00:00+07:00',
+        end_time: '2025-11-15T09:30:00+07:00',
+      });
 
-//     const res = await request(app)
-//       .post('/api/appointments')
-//       .set('Idempotency-Key', 'test-3')
-//       .send({
-//         patient_id: 'pat_001',
-//         doctor_id: 'doc_001',
-//         start_time: '2025-11-15T09:15:00+07:00',
-//         end_time: '2025-11-15T09:45:00+07:00',
-//       });
+    const res = await request(app)
+      .post('/api/appointments')
+      .set('Idempotency-Key', 'test-3')
+      .send({
+        patient_id: 'pat_001',
+        doctor_id: 'doc_001',
+        start_time: '2025-11-15T09:15:00+07:00',
+        end_time: '2025-11-15T09:45:00+07:00',
+      });
 
-//     expect(res.status).toBe(409);
-//   });
+    expect(res.status).toBe(409);
+  });
 });
