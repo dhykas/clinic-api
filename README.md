@@ -42,6 +42,149 @@ Clinic API adalah backend service untuk sistem appointment klinik yang dirancang
 
 ---
 
+## Prerequisites
+
+Pastikan Anda sudah menginstall:
+- Node.js (versi 18 atau lebih tinggi)
+- npm atau yarn
+- PostgreSQL atau MySQL (sesuai pilihan)
+
+## Installation
+
+### 1. Clone repository
+
+```bash
+git clone <repository-url>
+cd <project-name>
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Setup environment variables
+
+Buat file `.env` di root folder:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+# Untuk MySQL gunakan:
+# DATABASE_URL="mysql://user:password@localhost:3306/dbname"
+
+# Server
+PORT=3000
+NODE_ENV=development
+
+```
+
+### 4. Setup Prisma
+
+Generate Prisma Client:
+
+```bash
+npx prisma generate
+```
+
+Jalankan migrasi database:
+
+```bash
+npx prisma migrate dev --name init
+```
+
+(Opsional) Seed database:
+
+```bash
+npx prisma db seed
+```
+
+## Project Structure
+
+```
+├── prisma/
+│   ├── schema.prisma      # Prisma schema
+│   └── migrations/        # Database migrations
+├── src/
+│   ├── controllers/       # Route controllers
+│   ├── routes/            # API routes
+│   ├── middlewares/       # Custom middlewares
+│   ├── services/          # Business logic
+│   ├── utils/             # Helper functions
+│   ├── types/             # TypeScript types
+│   └── app.ts             # Entry point
+├── .env                   # Environment variables
+├── .gitignore
+├── package.json
+├── tsconfig.json          # TypeScript config
+└── README.md
+```
+
+## Development
+
+Jalankan development server dengan hot reload:
+
+```bash
+npm run dev
+```
+
+Server akan berjalan di `http://localhost:3000`
+
+## Build
+
+Compile TypeScript ke JavaScript:
+
+```bash
+npm run build
+```
+
+Jalankan production build:
+
+```bash
+npm start
+```
+
+## Available Scripts
+
+- `npm run dev` - Jalankan development server dengan nodemon
+- `npm run build` - Compile TypeScript
+- `npm start` - Jalankan production server
+- `npm seed` - Seeding data ke database
+- `npm test` - testing service dan integerasi data
+- `npm run prisma:generate` - Generate Prisma Client
+- `npm run prisma:migrate` - Jalankan database migration
+- `npm run prisma:studio` - Buka Prisma Studio (GUI database)
+
+## Prisma Commands
+
+### Migrasi Database
+
+Buat migration baru:
+```bash
+npx prisma migrate dev --name <migration-name>
+```
+
+Reset database:
+```bash
+npx prisma migrate reset
+```
+
+### Prisma Studio
+
+Buka GUI untuk melihat dan mengedit data:
+```bash
+npx prisma studio
+```
+
+### Update Schema
+
+Setelah mengubah `schema.prisma`:
+```bash
+npx prisma generate
+npx prisma migrate dev
+```
+
 ## 📦 API Endpoints
 
 ### Health
